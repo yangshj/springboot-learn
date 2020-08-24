@@ -62,17 +62,27 @@ public class WebSocketServer {
 
     //收到客户端信息
     @OnMessage
-    public void onMessage(String message) throws IOException{
+    public void onMessage(Session session, String message) throws IOException{
         message = "客户端：" + message + ",已收到";
         System.out.println(message);
-        for (Session session: sessionPools.values()) {
-            try {
-                sendMessage(session, message);
-            } catch(Exception e){
-                e.printStackTrace();
-                continue;
-            }
+        System.out.println(session);
+        if(message.equals("beginTransaction")){
+
+        } else if(message.equals("commitTransaction")){
+
+        } else if(message.equals("rollBackTransaction")){
+
+        } else {
+
         }
+//        for (Session session: sessionPools.values()) {
+//            try {
+//                sendMessage(session, message);
+//            } catch(Exception e){
+//                e.printStackTrace();
+//                continue;
+//            }
+//        }
     }
 
     //错误时调用

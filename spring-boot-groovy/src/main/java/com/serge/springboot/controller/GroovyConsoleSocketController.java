@@ -2,6 +2,7 @@ package com.serge.springboot.controller;
 
 import com.serge.springboot.component.GroovyShellUtil;
 import com.serge.springboot.component.ScriptResult;
+import com.serge.springboot.component.WorkThread;
 import com.serge.springboot.pojo.City;
 import com.serge.springboot.service.CityService;
 import groovy.lang.GroovyShell;
@@ -41,7 +42,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
     @Autowired
     private CityService cityService;
     // 工作线程集合
-    private Map<String, Thread> workThread = new HashMap<String, Thread>();
+    private Map<String, WorkThread> workThreadMap = new HashMap<String, WorkThread>();
 
     @RequestMapping(method = RequestMethod.GET)
     public String index() {
@@ -56,22 +57,27 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
             return ScriptResult.create("非法请求",null);
         }
-        if(workThread.containsKey(userId)){
-
+        if(!workThreadMap.containsKey(userId)){
+            WorkThread workThread = new WorkThread(applicationContext);
+            workThreadMap.put(userId, workThread);
+            return workThread.execute(script);
+        } else {
+            WorkThread workThread = workThreadMap.get(userId);
+            return workThread.execute(script);
         }
-        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+//        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
 //        platformTransactionManager.commit(transactionStatus);
-        City city = new City();
-        city.setCityName("北京");
-        city.setDescription("北京是首都");
-        city.setProvinceId(1L);
-        cityService.insert(city);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
-        Object result = groovyShell.evaluate(script);
-        ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
-        platformTransactionManager.rollback(transactionStatus);
-        return scriptResult;
+//        City city = new City();
+//        city.setCityName("北京");
+//        city.setDescription("北京是首都");
+//        city.setProvinceId(1L);
+//        cityService.insert(city);
+//        ByteArrayOutputStream out = new ByteArrayOutputStream();
+//        GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
+//        Object result = groovyShell.evaluate(script);
+//        ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
+//        platformTransactionManager.rollback(transactionStatus);
+//        return scriptResult;
     }
 
     @Override
