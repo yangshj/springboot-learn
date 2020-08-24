@@ -2,11 +2,18 @@ package com.serge.springboot.controller;
 
 import com.serge.springboot.component.GroovyShellUtil;
 import com.serge.springboot.component.ScriptResult;
+import com.serge.springboot.pojo.City;
+import com.serge.springboot.service.CityService;
 import groovy.lang.GroovyShell;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,14 +30,17 @@ import java.io.ByteArrayOutputStream;
 @RequestMapping("/consoleSocket")
 public class GroovyConsoleSocketController implements ApplicationContextAware {
 
-
-
     private ApplicationContext applicationContext;
-
+    @Autowired
+    private PlatformTransactionManager platformTransactionManager;
+    @Autowired
+    private TransactionDefinition transactionDefinition;
+    @Autowired
+    private CityService cityService;
 
     @RequestMapping(method = RequestMethod.GET)
     public String index() {
-        return "redirect:/console/index.html";
+        return "redirect:/console/socketIndex.html";
     }
 
 
@@ -38,10 +48,18 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
     @RequestMapping(value = "/groovy", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
     public ScriptResult execute(@RequestParam String script) {
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+//        platformTransactionManager.commit(transactionStatus);
+        City city = new City();
+        city.setCityName("北京");
+        city.setDescription("北京是首都");
+        city.setProvinceId(1L);
+        cityService.insert(city);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
         Object result = groovyShell.evaluate(script);
         ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
+        platformTransactionManager.rollback(transactionStatus);
         return scriptResult;
     }
 
