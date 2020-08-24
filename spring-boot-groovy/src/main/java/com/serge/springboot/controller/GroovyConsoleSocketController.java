@@ -12,14 +12,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
 
 /**
- * Controller for evaluating scripts from groovy console.
+ * 用长链接的方式，实现事务控制。
+ * 1、动态执行代码，有风险
+ * 2、添加事务后，可以查看自己执行结果是否正确后，再进行提交代码或者回滚
  */
 @Controller
-@RequestMapping("/console")
-public class GroovyConsoleController implements ApplicationContextAware {
+@RequestMapping("/consoleSocket")
+public class GroovyConsoleSocketController implements ApplicationContextAware {
+
 
 
     private ApplicationContext applicationContext;
@@ -29,6 +32,7 @@ public class GroovyConsoleController implements ApplicationContextAware {
     public String index() {
         return "redirect:/console/index.html";
     }
+
 
 
     @RequestMapping(value = "/groovy", method = {RequestMethod.GET, RequestMethod.POST})
