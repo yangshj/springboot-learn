@@ -14,12 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 用长链接的方式，实现事务控制。
@@ -37,6 +40,8 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
     private TransactionDefinition transactionDefinition;
     @Autowired
     private CityService cityService;
+    // 工作线程集合
+    private Map<String, Thread> workThread = new HashMap<String, Thread>();
 
     @RequestMapping(method = RequestMethod.GET)
     public String index() {
@@ -47,7 +52,13 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
 
     @RequestMapping(value = "/groovy", method = {RequestMethod.GET, RequestMethod.POST})
     @ResponseBody
-    public ScriptResult execute(@RequestParam String script) {
+    public ScriptResult execute(@RequestParam String userId, @RequestParam String script) {
+        if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
+            return ScriptResult.create("非法请求",null);
+        }
+        if(workThread.containsKey(userId)){
+
+        }
         TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
 //        platformTransactionManager.commit(transactionStatus);
         City city = new City();
