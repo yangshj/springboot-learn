@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -24,7 +25,6 @@ public class WorkThread extends Thread {
     // 事务
     private TransactionStatus transactionStatus;
     private PlatformTransactionManager platformTransactionManager;
-    private TransactionDefinition transactionDefinition;
 
     // 最后一次脚本执行结果
     private ScriptResult scriptResult;
@@ -36,7 +36,6 @@ public class WorkThread extends Thread {
     public WorkThread(ApplicationContext applicationContext){
         this.applicationContext = applicationContext;
         this.platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
-        this.transactionDefinition =  ApplicationContextUtils.getBean(TransactionDefinition.class);
     }
 
     @Override
@@ -76,9 +75,9 @@ public class WorkThread extends Thread {
 
 
     public void beginTransaction(){
-        transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
-        System.out.println("保存点: "+transactionStatus.hasSavepoint());
-        System.out.println("新事务: "+transactionStatus.isNewTransaction());
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW); // 事物隔离级别，开启新事务，这样会比较安全些。
+        transactionStatus = platformTransactionManager.getTransaction(def); // 获得事务状态
         System.out.println("开启事务");
     }
 

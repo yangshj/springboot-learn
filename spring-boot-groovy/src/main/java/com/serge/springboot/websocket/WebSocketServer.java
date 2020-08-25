@@ -91,14 +91,6 @@ public class WebSocketServer {
         } else {
             System.out.println("非法指令: " + message);
         }
-//        for (Session session: sessionPools.values()) {
-//            try {
-//                sendMessage(session, message);
-//            } catch(Exception e){
-//                e.printStackTrace();
-//                continue;
-//            }
-//        }
     }
 
     //错误时调用

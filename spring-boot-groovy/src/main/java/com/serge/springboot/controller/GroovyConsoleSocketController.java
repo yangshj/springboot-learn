@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,7 +58,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
             return ScriptResult.create("非法请求",null);
         }
-//        return testTransaction(script);
+        //return testTransaction(script);
         if(!WorkThreadUtil.workThreadMap.containsKey(userId)){
             WorkThread workThread = WorkThreadUtil.createThread(userId);
             workThread.start();
@@ -71,10 +73,9 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
     // 测试事务
     public ScriptResult testTransaction(String script){
         PlatformTransactionManager platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
-        TransactionDefinition transactionDefinition =  ApplicationContextUtils.getBean(TransactionDefinition.class);
-        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
-        System.out.println("保存点: "+transactionStatus.hasSavepoint());
-        System.out.println("新事务: "+transactionStatus.isNewTransaction());
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW); // 事物隔离级别，开启新事务，这样会比较安全些。
+        TransactionStatus status = platformTransactionManager.getTransaction(def); // 获得事务状态
         City city = new City();
         city.setCityName("北京");
         city.setDescription("北京是首都");
@@ -86,7 +87,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(ApplicationContextUtils.getApplicationContext(), out);
         Object result = groovyShell.evaluate(script);
         ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
-        platformTransactionManager.rollback(transactionStatus);
+        platformTransactionManager.commit(status);
         return scriptResult;
     }
 
