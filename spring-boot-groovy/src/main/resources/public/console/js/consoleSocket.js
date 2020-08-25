@@ -90,7 +90,8 @@
             //打开事件
             socket.onopen = function () {
                 console.log("websocket已打开");
-                socket.send("beginTransaction");
+                var jsonObj = {"userId":guid, "message":"beginTransaction"};
+                socket.send(JSON.stringify(jsonObj));
             };
             //获得消息事件
             socket.onmessage = function (msg) {
@@ -116,7 +117,8 @@
         if (socket == null) {
             return;
         }
-        socket.send("commitTransaction");
+        var jsonObj = {"userId":guid, "message":"commitTransaction"};
+        socket.send(JSON.stringify(jsonObj));
     });
 
     /**
@@ -126,7 +128,8 @@
         if (socket == null) {
             return;
         }
-        socket.send("rollBackTransaction");
+        var jsonObj = {"userId":+"\""+guid+"\"", "message":"commitTransaction"};
+        socket.send(JSON.stringify(jsonObj));
     });
 
     $window.on('hashchange', hashChangeEventHandler);

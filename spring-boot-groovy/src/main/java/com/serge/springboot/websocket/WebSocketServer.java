@@ -1,5 +1,9 @@
 package com.serge.springboot.websocket;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.serge.springboot.component.WorkThread;
+import com.serge.springboot.component.WorkThreadUtil;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
@@ -8,6 +12,7 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 @ServerEndpoint("/webSocket/{sid}")
 @Component
@@ -46,7 +51,7 @@ public class WebSocketServer {
         addOnlineCount();
         System.out.println(userName + "加入webSocket！当前人数为" + onlineNum);
         try {
-            sendMessage(session, "欢迎" + userName + "加入连接！");
+            sendMessage(session, "成功开启事务");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,17 +68,28 @@ public class WebSocketServer {
     //收到客户端信息
     @OnMessage
     public void onMessage(Session session, String message) throws IOException{
-        message = "客户端：" + message + ",已收到";
         System.out.println(message);
-        System.out.println(session);
-        if(message.equals("beginTransaction")){
-
-        } else if(message.equals("commitTransaction")){
-
-        } else if(message.equals("rollBackTransaction")){
-
+        JSONObject  jsonObject = JSON.parseObject(message);
+        String userId = (String) jsonObject.get("userId");
+        if(!sessionPools.containsKey(userId)){
+            System.out.println("非法请求: " + message);
+        }
+        String messageStr = (String)jsonObject.get("message");
+        if(!WorkThreadUtil.workThreadMap.containsKey(userId)){
+            WorkThread workThread = WorkThreadUtil.createThread(userId);
+            workThread.start();
+        }
+        if(messageStr.equals("beginTransaction")){
+            WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
+            workThread.beginTransaction();
+        } else if(messageStr.equals("commitTransaction")){
+            WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
+            workThread.beginTransaction();
+        } else if(messageStr.equals("rollBackTransaction")){
+            WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
+            workThread.beginTransaction();
         } else {
-
+            System.out.println("非法指令: " + message);
         }
 //        for (Session session: sessionPools.values()) {
 //            try {

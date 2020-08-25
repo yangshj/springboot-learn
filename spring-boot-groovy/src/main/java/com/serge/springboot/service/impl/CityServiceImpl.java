@@ -13,7 +13,7 @@ import java.util.List;
  *
  * Created by bysocket on 07/02/2017.
  */
-@Service
+@Service("cityService")
 public class CityServiceImpl implements CityService {
 
     @Autowired

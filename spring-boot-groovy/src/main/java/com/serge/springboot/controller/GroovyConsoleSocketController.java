@@ -1,8 +1,10 @@
 package com.serge.springboot.controller;
 
+import com.serge.springboot.component.ApplicationContextUtils;
 import com.serge.springboot.component.GroovyShellUtil;
 import com.serge.springboot.component.ScriptResult;
 import com.serge.springboot.component.WorkThread;
+import com.serge.springboot.component.WorkThreadUtil;
 import com.serge.springboot.pojo.City;
 import com.serge.springboot.service.CityService;
 import groovy.lang.GroovyShell;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,15 +35,10 @@ import java.util.Map;
 @RequestMapping("/consoleSocket")
 public class GroovyConsoleSocketController implements ApplicationContextAware {
 
-    private ApplicationContext applicationContext;
-    @Autowired
-    private PlatformTransactionManager platformTransactionManager;
-    @Autowired
-    private TransactionDefinition transactionDefinition;
+
     @Autowired
     private CityService cityService;
-    // 工作线程集合
-    private Map<String, WorkThread> workThreadMap = new HashMap<String, WorkThread>();
+
 
     @RequestMapping(method = RequestMethod.GET)
     public String index() {
@@ -57,21 +53,20 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
             return ScriptResult.create("非法请求",null);
         }
-        if(!workThreadMap.containsKey(userId)){
-            WorkThread workThread = new WorkThread(applicationContext);
-            workThreadMap.put(userId, workThread);
+        if(!WorkThreadUtil.workThreadMap.containsKey(userId)){
+            WorkThread workThread = WorkThreadUtil.createThread(userId);
+            workThread.start();
             return workThread.execute(script);
         } else {
-            WorkThread workThread = workThreadMap.get(userId);
+            WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
             return workThread.execute(script);
         }
-//        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
-//        platformTransactionManager.commit(transactionStatus);
 //        City city = new City();
 //        city.setCityName("北京");
 //        city.setDescription("北京是首都");
 //        city.setProvinceId(1L);
 //        cityService.insert(city);
+//        cityService.findAll();
 //        ByteArrayOutputStream out = new ByteArrayOutputStream();
 //        GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
 //        Object result = groovyShell.evaluate(script);
@@ -82,7 +77,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+        ApplicationContextUtils.setApplicationContext(applicationContext);
     }
 
 

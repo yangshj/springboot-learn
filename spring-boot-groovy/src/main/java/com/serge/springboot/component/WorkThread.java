@@ -23,6 +23,9 @@ public class WorkThread extends Thread {
     private final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
     // 事务
     private TransactionStatus transactionStatus;
+    private PlatformTransactionManager platformTransactionManager;
+    private TransactionDefinition transactionDefinition;
+
     // 最后一次脚本执行结果
     private ScriptResult scriptResult;
     // 所有执行结果
@@ -30,13 +33,15 @@ public class WorkThread extends Thread {
 
     private Object lock = new Object();
 
-    public WorkThread(ApplicationContext applicationContext){
+    public WorkThread(ApplicationContext applicationContext, PlatformTransactionManager platformTransactionManager, TransactionDefinition transactionDefinition){
         this.applicationContext = applicationContext;
+        this.platformTransactionManager = platformTransactionManager;
+        this.transactionDefinition = transactionDefinition;
     }
 
     @Override
     public void run() {
-        while (isInterrupted()){
+        while (!isInterrupted()){
             try {
                 String script = queue.poll(30, TimeUnit.SECONDS);
                 if(script==null){
@@ -46,7 +51,10 @@ public class WorkThread extends Thread {
                 GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
                 Object result = groovyShell.evaluate(script);
                 scriptResult =  ScriptResult.create(result, out.toString());
-                lock.notify();
+                resultList.add(scriptResult);
+                synchronized (lock) {
+                    lock.notifyAll();
+                }
             } catch (Exception e){
                 e.printStackTrace();
             }
@@ -57,25 +65,27 @@ public class WorkThread extends Thread {
     public ScriptResult execute(String script){
         queue.add(script);
         try {
-            lock.wait();
-        } catch (InterruptedException e) {
+            synchronized (lock){
+                lock.wait();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return scriptResult;
     }
 
 
-    public void beginTransaction(PlatformTransactionManager platformTransactionManager, TransactionDefinition transactionDefinition){
+    public void beginTransaction(){
         transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
     }
 
-    public void commitTransaction(PlatformTransactionManager platformTransactionManager){
+    public void commitTransaction(){
         if(transactionStatus!=null){
             platformTransactionManager.commit(transactionStatus);
         }
     }
 
-    public void rollBackTransaction(PlatformTransactionManager platformTransactionManager){
+    public void rollBackTransaction(){
         if(transactionStatus!=null) {
             platformTransactionManager.rollback(transactionStatus);
         }

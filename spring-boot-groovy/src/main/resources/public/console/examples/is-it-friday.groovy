@@ -1,4 +1,8 @@
 // checks if groovy console works
-def calendar = Calendar.getInstance()
-def isFriday = calendar.get(Calendar.DAY_OF_WEEK) == Calendar.FRIDAY
-println "Is it friday? ${isFriday ? 'Yes' : 'No'}"
+import com.serge.springboot.pojo.City;
+City city = new City();
+city.setCityName("北京");
+city.setDescription("北京是首都");
+city.setProvinceId(1L);
+cityService.insert(city);
+cityService.findAll();
