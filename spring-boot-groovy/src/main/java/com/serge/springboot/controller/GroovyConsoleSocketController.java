@@ -14,11 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,9 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 用长链接的方式，实现事务控制。
@@ -58,7 +54,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
             return ScriptResult.create("非法请求",null);
         }
-        //return testTransaction(script);
+//        return testTransaction(script);
         if(!WorkThreadUtil.workThreadMap.containsKey(userId)){
             WorkThread workThread = WorkThreadUtil.createThread(userId);
             workThread.start();
@@ -87,7 +83,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(ApplicationContextUtils.getApplicationContext(), out);
         Object result = groovyShell.evaluate(script);
         ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
-        platformTransactionManager.commit(status);
+        platformTransactionManager.rollback(status);
         return scriptResult;
     }
 

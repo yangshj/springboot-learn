@@ -35,7 +35,6 @@ public class WorkThread extends Thread {
 
     public WorkThread(ApplicationContext applicationContext){
         this.applicationContext = applicationContext;
-        this.platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
     }
 
     @Override
@@ -44,6 +43,16 @@ public class WorkThread extends Thread {
             try {
                 String script = queue.poll(30, TimeUnit.SECONDS);
                 if(script==null){
+                    continue;
+                }
+                if(script.equals("beginTransaction")){
+                    this.begin();
+                    continue;
+                } else if(script.equals("commitTransaction")) {
+                    this.commit();
+                    continue;
+                } else if(script.equals("rollBackTransaction")) {
+                    this.rollBack();
                     continue;
                 }
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -73,30 +82,40 @@ public class WorkThread extends Thread {
         return scriptResult;
     }
 
-
-    public void beginTransaction(){
+    private void begin(){
+        platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
         DefaultTransactionDefinition def = new DefaultTransactionDefinition();
         def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW); // 事物隔离级别，开启新事务，这样会比较安全些。
         transactionStatus = platformTransactionManager.getTransaction(def); // 获得事务状态
         System.out.println("开启事务");
     }
 
-    public void commitTransaction(){
+    private void commit(){
         if(transactionStatus!=null){
             platformTransactionManager.commit(transactionStatus);
             System.out.println("提交事务");
         }
     }
 
-    public void rollBackTransaction(){
+    private void rollBack(){
         if(transactionStatus!=null) {
             platformTransactionManager.rollback(transactionStatus);
             System.out.println("回滚事务");
         }
     }
 
+    public void beginTransaction(){
+        queue.add("beginTransaction");
+    }
 
+    public void commitTransaction(){
+        queue.add("commitTransaction");
 
+    }
+
+    public void rollBackTransaction(){
+        queue.add("rollBackTransaction");
+    }
 
 
 }
