@@ -36,7 +36,7 @@
     });
 
     $("#send-button").on("click", function () {
-        $.blockUI();
+        $.blockUI({ message: '<h1>Please wait...</h1>' });
         $.ajax({
             url: "/consoleSocket/groovy",
             type: "POST",
@@ -90,8 +90,10 @@
             //打开事件
             socket.onopen = function () {
                 console.log("websocket已打开");
+                $.blockUI({ message: '<h1>开启事务</h1>' });
                 var jsonObj = {"userId":guid, "message":"beginTransaction"};
                 socket.send(JSON.stringify(jsonObj));
+                $.unblockUI();
             };
             //获得消息事件
             socket.onmessage = function (msg) {
@@ -117,8 +119,10 @@
         if (socket == null) {
             return;
         }
+        $.blockUI({ message: '<h1>提交事务</h1>' });
         var jsonObj = {"userId":guid, "message":"commitTransaction"};
         socket.send(JSON.stringify(jsonObj));
+        $.unblockUI();
     });
 
     /**
@@ -128,8 +132,10 @@
         if (socket == null) {
             return;
         }
+        $.blockUI({ message: '<h1>回滚事务</h1>' });
         var jsonObj = {"userId":guid, "message":"rollBackTransaction"};
         socket.send(JSON.stringify(jsonObj));
+        $.unblockUI();
     });
 
     $window.on('hashchange', hashChangeEventHandler);
