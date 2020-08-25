@@ -128,7 +128,7 @@
         if (socket == null) {
             return;
         }
-        var jsonObj = {"userId":+"\""+guid+"\"", "message":"commitTransaction"};
+        var jsonObj = {"userId":guid, "message":"rollBackTransaction"};
         socket.send(JSON.stringify(jsonObj));
     });
 

@@ -1,7 +1,5 @@
 package com.serge.springboot.component;
 
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +19,7 @@ public class WorkThreadUtil {
      * 创建线程
      */
     public static WorkThread createThread(String userId){
-        PlatformTransactionManager platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
-        TransactionDefinition transactionDefinition =  ApplicationContextUtils.getBean(TransactionDefinition.class);
-        WorkThread workThread = new WorkThread(ApplicationContextUtils.getApplicationContext(), platformTransactionManager, transactionDefinition);
+        WorkThread workThread = new WorkThread(ApplicationContextUtils.getApplicationContext());
         workThreadMap.put(userId, workThread);
         return workThread;
     }

@@ -51,7 +51,7 @@ public class WebSocketServer {
         addOnlineCount();
         System.out.println(userName + "加入webSocket！当前人数为" + onlineNum);
         try {
-            sendMessage(session, "成功开启事务");
+            sendMessage(session, "开启链接");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -84,10 +84,10 @@ public class WebSocketServer {
             workThread.beginTransaction();
         } else if(messageStr.equals("commitTransaction")){
             WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
-            workThread.beginTransaction();
+            workThread.commitTransaction();
         } else if(messageStr.equals("rollBackTransaction")){
             WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
-            workThread.beginTransaction();
+            workThread.rollBackTransaction();
         } else {
             System.out.println("非法指令: " + message);
         }

@@ -1,5 +1,6 @@
 package com.serge.springboot.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.serge.springboot.component.ApplicationContextUtils;
 import com.serge.springboot.component.GroovyShellUtil;
 import com.serge.springboot.component.ScriptResult;
@@ -23,7 +24,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,6 +56,7 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         if(StringUtils.isEmpty(userId) || StringUtils.isEmpty(script)){
             return ScriptResult.create("非法请求",null);
         }
+//        return testTransaction(script);
         if(!WorkThreadUtil.workThreadMap.containsKey(userId)){
             WorkThread workThread = WorkThreadUtil.createThread(userId);
             workThread.start();
@@ -61,18 +65,29 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
             WorkThread workThread = WorkThreadUtil.workThreadMap.get(userId);
             return workThread.execute(script);
         }
-//        City city = new City();
-//        city.setCityName("北京");
-//        city.setDescription("北京是首都");
-//        city.setProvinceId(1L);
-//        cityService.insert(city);
-//        cityService.findAll();
-//        ByteArrayOutputStream out = new ByteArrayOutputStream();
-//        GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(applicationContext, out);
-//        Object result = groovyShell.evaluate(script);
-//        ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
-//        platformTransactionManager.rollback(transactionStatus);
-//        return scriptResult;
+    }
+
+
+    // 测试事务
+    public ScriptResult testTransaction(String script){
+        PlatformTransactionManager platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
+        TransactionDefinition transactionDefinition =  ApplicationContextUtils.getBean(TransactionDefinition.class);
+        TransactionStatus transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+        System.out.println("保存点: "+transactionStatus.hasSavepoint());
+        System.out.println("新事务: "+transactionStatus.isNewTransaction());
+        City city = new City();
+        city.setCityName("北京");
+        city.setDescription("北京是首都");
+        city.setProvinceId(1L);
+        cityService.insert(city);
+        List<City> list =  cityService.findAll();
+        System.out.println(JSON.toJSONString(list));
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        GroovyShell groovyShell = GroovyShellUtil.createGroovyShell(ApplicationContextUtils.getApplicationContext(), out);
+        Object result = groovyShell.evaluate(script);
+        ScriptResult scriptResult =  ScriptResult.create(result, out.toString());
+        platformTransactionManager.rollback(transactionStatus);
+        return scriptResult;
     }
 
     @Override

@@ -33,10 +33,10 @@ public class WorkThread extends Thread {
 
     private Object lock = new Object();
 
-    public WorkThread(ApplicationContext applicationContext, PlatformTransactionManager platformTransactionManager, TransactionDefinition transactionDefinition){
+    public WorkThread(ApplicationContext applicationContext){
         this.applicationContext = applicationContext;
-        this.platformTransactionManager = platformTransactionManager;
-        this.transactionDefinition = transactionDefinition;
+        this.platformTransactionManager = ApplicationContextUtils.getBean(PlatformTransactionManager.class);
+        this.transactionDefinition =  ApplicationContextUtils.getBean(TransactionDefinition.class);
     }
 
     @Override
@@ -77,17 +77,22 @@ public class WorkThread extends Thread {
 
     public void beginTransaction(){
         transactionStatus = platformTransactionManager.getTransaction(transactionDefinition);
+        System.out.println("保存点: "+transactionStatus.hasSavepoint());
+        System.out.println("新事务: "+transactionStatus.isNewTransaction());
+        System.out.println("开启事务");
     }
 
     public void commitTransaction(){
         if(transactionStatus!=null){
             platformTransactionManager.commit(transactionStatus);
+            System.out.println("提交事务");
         }
     }
 
     public void rollBackTransaction(){
         if(transactionStatus!=null) {
             platformTransactionManager.rollback(transactionStatus);
+            System.out.println("回滚事务");
         }
     }
 
