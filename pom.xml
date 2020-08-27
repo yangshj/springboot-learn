@@ -12,6 +12,7 @@
         <module>spring-boot-groovy</module>
         <module>springboot-elasticsearch</module>
         <module>springboot-mybatis-mutil-datasource</module>
+        <module>springboot-distributedlock-redis</module>
     </modules>
 
     <parent>
