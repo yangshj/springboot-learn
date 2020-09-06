@@ -6,13 +6,13 @@ import java.time.Duration;
 import java.util.Collections;
 
 /**
- * 模拟消费
+ * 妯℃嫙娑堣垂
  */
 public class ConsumeMessageThread extends Thread {
     @Override
     public void run() {
         Consumer<String, String> consumer = KafkaCreator.createConsumer();
-        // 循环消费消息
+        // 寰幆娑堣垂娑堟伅
         while (true) {
             //subscribe topic and consume message
             consumer.subscribe(Collections.singletonList(KafkaConstants.TOPIC));

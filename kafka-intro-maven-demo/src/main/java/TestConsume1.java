@@ -1,5 +1,5 @@
 /**
- * һ��������ͬʱֻ�ܱ�һ����������Ϣ
+ * 一个分区，同时只能被一个消费者消息
  */
 public class TestConsume1 {
 

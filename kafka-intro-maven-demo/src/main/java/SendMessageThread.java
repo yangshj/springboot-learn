@@ -5,7 +5,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Ä£Äâ·¢ËÍÏûÏ¢
+ * æ¨¡æ‹Ÿå‘é€æ¶ˆæ¯
  */
 public class SendMessageThread extends Thread {
 
