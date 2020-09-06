@@ -13,6 +13,10 @@
         <module>springboot-elasticsearch</module>
         <module>springboot-mybatis-mutil-datasource</module>
         <module>springboot-distributedlock-redis</module>
+        <module>kafka-intro-maven-demo</module>
+        <module>springboot-kafka-01-send-objects</module>
+        <module>springboot-kafka-02-config-topics</module>
+        <module>springboot-kafka-03-transaction</module>
     </modules>
 
     <parent>
