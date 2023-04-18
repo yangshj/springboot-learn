@@ -87,6 +87,18 @@ public class GroovyConsoleSocketController implements ApplicationContextAware {
         return scriptResult;
     }
 
+        // 以下代码可以粘贴到控制台直接执行
+    public void testConsole(String script){
+//        import com.serge.springboot.pojo.City;
+//        def cityService = applicationContext.getBean("cityService")
+//        City city = new City();
+//        city.setCityName("北京");
+//        city.setDescription("北京是首都");
+//        city.setProvinceId(1L);
+//        cityService.insert(city);
+//        List<City> list =  cityService.findAll();
+    }
+    
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         ApplicationContextUtils.setApplicationContext(applicationContext);
